@@ -1,5 +1,7 @@
 # Revisiting the Ordering of Channel and Spatial Attention: A Comprehensive Study on Sequential and Parallel Designs
 
+This paper can be accessed for free at https://arxiv.org/pdf/2601.07310.
+
 ## Abstract
 
 Attention mechanisms have become a core component of deep learning models, with Channel Attention and Spatial Attention being the two most representative architectures. Current research on their fusion strategies primarily bifurcates into sequential and parallel paradigms, yet the selection process remains largely empirical, lacking systematic analysis and unified principles. We systematically compare channel-spatial attention combinations under a unified framework, building an evaluation suite of 18 topologies across four classes: sequential, parallel, multi-scale, and residual. Across two vision and nine medical datasets, we uncover a "data scale-method-performance" coupling law: (1) in few-shot tasks, the "Channel-Multi-scale Spatial" cascaded structure achieves optimal performance; (2) in medium-scale tasks, parallel learnable fusion architectures demonstrate superior results; (3) in large-scale tasks, parallel structures with dynamic gating yield the best performance. Additionally, experiments indicate that the "Spatial-Channel" order is more stable and effective for fine-grained classification, while residual connections mitigate vanishing gradient problems across varying data scales. We thus propose scenario-based guidelines for building future attention modules. 
@@ -144,3 +146,135 @@ if __name__ == "__main__":
     main()
 ```
 
+### Sequential Mode
+
+![first-1](https://github.com/user-attachments/assets/30d25e08-00d8-44d6-99ba-6816122b2b82)
+
+
+####  Channel and Spatial Attention ( CSA || CBAM )
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+class ChannelAttention(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        hidden = max(8, in_channels // reduction)
+        self.mlp = nn.Sequential(
+            nn.Linear(in_channels, hidden, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden, in_channels, bias=False),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        n, c, h, w = x.shape
+        avg_pool = F.adaptive_avg_pool2d(x, 1).view(n, c)
+        max_pool = F.adaptive_max_pool2d(x, 1).view(n, c)
+        attn = self.mlp(avg_pool) + self.mlp(max_pool)
+        attn = torch.sigmoid(attn).view(n, c, 1, 1)
+        return x * attn
+
+
+class SpatialAttention(nn.Module):
+    def __init__(self, kernel_size: int = 7):
+        super().__init__()
+        padding = kernel_size // 2
+        self.conv = nn.Conv2d(2, 1, kernel_size=kernel_size, padding=padding, bias=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = torch.mean(x, dim=1, keepdim=True)
+        max_pool, _ = torch.max(x, dim=1, keepdim=True)
+        feat = torch.cat([avg_pool, max_pool], dim=1)
+        attn = torch.sigmoid(self.conv(feat))
+        return x * attn
+
+
+class ChannelandSpatialAttention(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        self.ca = ChannelAttention(in_channels, reduction)
+        self.sa = SpatialAttention()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.sa(self.ca(x))
+
+
+def main():
+    torch.manual_seed(42)
+    x = torch.randn(2, 64, 32, 32)
+    csa = ChannelandSpatialAttention(64, 16)
+    with torch.no_grad():
+        out = csa(x)
+    print(f"in: {x.shape}  ->  out: {out.shape}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+#### Spatial and Channel Attention 
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+class ChannelAttention(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        hidden = max(8, in_channels // reduction)
+        self.mlp = nn.Sequential(
+            nn.Linear(in_channels, hidden, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden, in_channels, bias=False),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        n, c, h, w = x.shape
+        avg_pool = F.adaptive_avg_pool2d(x, 1).view(n, c)
+        max_pool = F.adaptive_max_pool2d(x, 1).view(n, c)
+        attn = self.mlp(avg_pool) + self.mlp(max_pool)
+        attn = torch.sigmoid(attn).view(n, c, 1, 1)
+        return x * attn
+
+
+class SpatialAttention(nn.Module):
+    def __init__(self, kernel_size: int = 7):
+        super().__init__()
+        padding = kernel_size // 2
+        self.conv = nn.Conv2d(2, 1, kernel_size=kernel_size, padding=padding, bias=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = torch.mean(x, dim=1, keepdim=True)
+        max_pool, _ = torch.max(x, dim=1, keepdim=True)
+        feat = torch.cat([avg_pool, max_pool], dim=1)
+        attn = torch.sigmoid(self.conv(feat))
+        return x * attn
+
+
+class SCAModule(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        self.sa = SpatialAttention()
+        self.ca = ChannelAttention(in_channels, reduction)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.ca(self.sa(x))
+
+
+def main():
+    torch.manual_seed(42)
+    x = torch.randn(4, 64, 32, 32)
+    sca = SCAModule(64, 16)
+    with torch.no_grad():
+        out = sca(x)
+    print(f"in: {x.shape}  ->  out: {out.shape}")
+
+
+if __name__ == "__main__":
+    main()
+```
