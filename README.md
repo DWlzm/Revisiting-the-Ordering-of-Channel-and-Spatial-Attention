@@ -38,27 +38,24 @@ import torch.nn.functional as F
 
 
 class ChannelAttention(nn.Module):
-    """Channel-attention module"""
+    """Channel-attention module (conv-based MLP)"""
     def __init__(self, in_channels: int, reduction: int = 16):
         super().__init__()
         hidden = max(8, in_channels // reduction)
         self.mlp = nn.Sequential(
-            nn.Linear(in_channels, hidden, bias=False),
+            nn.Conv2d(in_channels, hidden, 1, bias=False),
             nn.ReLU(inplace=True),
-            nn.Linear(hidden, in_channels, bias=False),
+            nn.Conv2d(hidden, in_channels, 1, bias=False),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        n, c, h, w = x.shape
-        avg_pool = F.adaptive_avg_pool2d(x, 1).view(n, c)
-        max_pool = F.adaptive_max_pool2d(x, 1).view(n, c)
+        avg_pool = F.adaptive_avg_pool2d(x, 1)
+        max_pool = F.adaptive_max_pool2d(x, 1)
         attn = self.mlp(avg_pool) + self.mlp(max_pool)
-        attn = torch.sigmoid(attn).view(n, c, 1, 1)
+        attn = torch.sigmoid(attn)
         return x * attn
 
-
 def main():
-    """Test ChannelAttention"""
     torch.manual_seed(42)
     x = torch.randn(2, 64, 32, 32)
     ca = ChannelAttention(64, 16)
@@ -158,25 +155,23 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 class ChannelAttention(nn.Module):
+    """Channel-attention module (conv-based MLP)"""
     def __init__(self, in_channels: int, reduction: int = 16):
         super().__init__()
         hidden = max(8, in_channels // reduction)
         self.mlp = nn.Sequential(
-            nn.Linear(in_channels, hidden, bias=False),
+            nn.Conv2d(in_channels, hidden, 1, bias=False),
             nn.ReLU(inplace=True),
-            nn.Linear(hidden, in_channels, bias=False),
+            nn.Conv2d(hidden, in_channels, 1, bias=False),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        n, c, h, w = x.shape
-        avg_pool = F.adaptive_avg_pool2d(x, 1).view(n, c)
-        max_pool = F.adaptive_max_pool2d(x, 1).view(n, c)
+        avg_pool = F.adaptive_avg_pool2d(x, 1)
+        max_pool = F.adaptive_max_pool2d(x, 1)
         attn = self.mlp(avg_pool) + self.mlp(max_pool)
-        attn = torch.sigmoid(attn).view(n, c, 1, 1)
+        attn = torch.sigmoid(attn)
         return x * attn
-
 
 class SpatialAttention(nn.Module):
     def __init__(self, kernel_size: int = 7):
@@ -222,25 +217,23 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 class ChannelAttention(nn.Module):
+    """Channel-attention module (conv-based MLP)"""
     def __init__(self, in_channels: int, reduction: int = 16):
         super().__init__()
         hidden = max(8, in_channels // reduction)
         self.mlp = nn.Sequential(
-            nn.Linear(in_channels, hidden, bias=False),
+            nn.Conv2d(in_channels, hidden, 1, bias=False),
             nn.ReLU(inplace=True),
-            nn.Linear(hidden, in_channels, bias=False),
+            nn.Conv2d(hidden, in_channels, 1, bias=False),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        n, c, h, w = x.shape
-        avg_pool = F.adaptive_avg_pool2d(x, 1).view(n, c)
-        max_pool = F.adaptive_max_pool2d(x, 1).view(n, c)
+        avg_pool = F.adaptive_avg_pool2d(x, 1)
+        max_pool = F.adaptive_max_pool2d(x, 1)
         attn = self.mlp(avg_pool) + self.mlp(max_pool)
-        attn = torch.sigmoid(attn).view(n, c, 1, 1)
+        attn = torch.sigmoid(attn)
         return x * attn
-
 
 class SpatialAttention(nn.Module):
     def __init__(self, kernel_size: int = 7):
