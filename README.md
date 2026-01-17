@@ -1,4 +1,146 @@
-# Revisiting-the-Ordering-of-Channel-and-Spatial-Attention
+# Revisiting the Ordering of Channel and Spatial Attention: A Comprehensive Study on Sequential and Parallel Designs
+
+## Abstract
+
+Attention mechanisms have become a core component of deep learning models, with Channel Attention and Spatial Attention being the two most representative architectures. Current research on their fusion strategies primarily bifurcates into sequential and parallel paradigms, yet the selection process remains largely empirical, lacking systematic analysis and unified principles. We systematically compare channel-spatial attention combinations under a unified framework, building an evaluation suite of 18 topologies across four classes: sequential, parallel, multi-scale, and residual. Across two vision and nine medical datasets, we uncover a "data scale-method-performance" coupling law: (1) in few-shot tasks, the "Channel-Multi-scale Spatial" cascaded structure achieves optimal performance; (2) in medium-scale tasks, parallel learnable fusion architectures demonstrate superior results; (3) in large-scale tasks, parallel structures with dynamic gating yield the best performance. Additionally, experiments indicate that the "Spatial-Channel" order is more stable and effective for fine-grained classification, while residual connections mitigate vanishing gradient problems across varying data scales. We thus propose scenario-based guidelines for building future attention modules. 
+
+![introduction-1](https://github.com/user-attachments/assets/94d81781-4a29-48f2-b4d4-7e20b7689cc8)
+
+## Cite
+
+```
+@misc{liu2026revisitingorderingchannelspatial,
+      title={Revisiting the Ordering of Channel and Spatial Attention: A Comprehensive Study on Sequential and Parallel Designs}, 
+      author={Zhongming Liu and Bingbing Jiang},
+      year={2026},
+      eprint={2601.07310},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2601.07310}, 
+}
+```
 
 
-The full open-source release of this code will be completed two months after the paper is accepted.
+## Code
+This section first introduces the core structures, mathematical expressions, and functional positioning of three types of basic attention components (Channel Attention, Spatial Attention, and Gate Attention)
+### Preliminaries
+
+![BasicComponents-1](https://github.com/user-attachments/assets/9824548c-a282-4124-b3ba-698661972cc6)
+
+#### Channel Attention(CA)
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+class ChannelAttention(nn.Module):
+    """Channel-attention module"""
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        hidden = max(8, in_channels // reduction)
+        self.mlp = nn.Sequential(
+            nn.Linear(in_channels, hidden, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden, in_channels, bias=False),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        n, c, h, w = x.shape
+        avg_pool = F.adaptive_avg_pool2d(x, 1).view(n, c)
+        max_pool = F.adaptive_max_pool2d(x, 1).view(n, c)
+        attn = self.mlp(avg_pool) + self.mlp(max_pool)
+        attn = torch.sigmoid(attn).view(n, c, 1, 1)
+        return x * attn
+
+
+def main():
+    """Test ChannelAttention"""
+    torch.manual_seed(42)
+    x = torch.randn(2, 64, 32, 32)
+    ca = ChannelAttention(64, 16)
+    with torch.no_grad():
+        out = ca(x)
+    print(f"in: {x.shape}  ->  out: {out.shape}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+#### Spatial Attention(SA)
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+class SpatialAttention(nn.Module):
+    """Spatial-attention module"""
+    def __init__(self, kernel_size: int = 7):
+        super().__init__()
+        self.conv = nn.Conv2d(2, 1, kernel_size, padding=kernel_size // 2, bias=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = torch.mean(x, dim=1, keepdim=True)
+        max_pool, _ = torch.max(x, dim=1, keepdim=True)
+        attn = torch.cat([avg_pool, max_pool], dim=1)
+        attn = torch.sigmoid(self.conv(attn))
+        return x * attn
+
+
+def main():
+    """Test SpatialAttention"""
+    torch.manual_seed(42)
+    x = torch.randn(2, 64, 32, 32)
+    sa = SpatialAttention(7)
+    with torch.no_grad():
+        out = sa(x)
+    print(f"in: {x.shape}  ->  out: {out.shape}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+#### Gate Attention(GA)
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+class GateAttention(nn.Module):
+    """Gate-attention module"""
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        hidden = max(8, in_channels // reduction)
+        self.gap   = nn.AdaptiveAvgPool2d(1)
+        self.mlp   = nn.Sequential(
+            nn.Conv2d(in_channels, hidden, 1, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(hidden, in_channels, 1, bias=False),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        attn = self.mlp(self.gap(x))   # (N,C,1,1)
+        return x * attn                # channel-wise gate
+
+
+def main():
+    """Test GateAttention"""
+    torch.manual_seed(42)
+    x = torch.randn(2, 64, 32, 32)
+    ga = GateAttention(64, 16)
+    with torch.no_grad():
+        out = ga(x)
+    print(f"in: {x.shape}  ->  out: {out.shape}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
