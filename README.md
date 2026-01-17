@@ -476,3 +476,139 @@ if __name__ == "__main__":
     main()
 ```
 
+
+#### Channel $\&$ Spatial Adaptive-Fusion Attention (C$\&$SAFA)
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+class ChannelAttention(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        hidden = max(8, in_channels // reduction)
+        self.mlp = nn.Sequential(
+            nn.Conv2d(in_channels, hidden, 1, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(hidden, in_channels, 1, bias=False),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = F.adaptive_avg_pool2d(x, 1)
+        max_pool = F.adaptive_max_pool2d(x, 1)
+        attn = self.mlp(avg_pool) + self.mlp(max_pool)
+        attn = torch.sigmoid(attn)
+        return x * attn
+
+
+class SpatialAttention(nn.Module):
+    def __init__(self, kernel_size: int = 7):
+        super().__init__()
+        padding = kernel_size // 2
+        self.conv = nn.Conv2d(2, 1, kernel_size=kernel_size, padding=padding, bias=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = torch.mean(x, dim=1, keepdim=True)
+        max_pool, _ = torch.max(x, dim=1, keepdim=True)
+        feat = torch.cat([avg_pool, max_pool], dim=1)
+        attn = torch.sigmoid(self.conv(feat))
+        return x * attn
+
+
+class  ChannelandSpatialAdaptiveFusionAttention (nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16, kernel_size: int = 7):
+        super().__init__()
+        self.ca = ChannelAttention(in_channels, reduction)
+        self.sa = SpatialAttention(kernel_size)
+        self.gamma = nn.Parameter(torch.tensor(0.5))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        alpha = torch.sigmoid(self.gamma)
+        return alpha * self.ca(x) + (1 - alpha) * self.sa(x)
+
+
+def main():
+    torch.manual_seed(42)
+    x = torch.randn(1, 64, 28, 28)
+    model = ChannelandSpatialAdaptiveFusionAttention(64, 16, 7)
+    model.eval()
+    with torch.no_grad():
+        out = model(x)
+    print(f"in: {x.shape}  ->  out: {out.shape}")
+
+
+if __name__ == '__main__':
+    main()
+```
+
+
+
+#### Bidirectional Channel-Spatial Attention(Bi-CSA)
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+class ChannelAttention(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        hidden = max(8, in_channels // reduction)
+        self.mlp = nn.Sequential(
+            nn.Conv2d(in_channels, hidden, 1, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(hidden, in_channels, 1, bias=False),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = F.adaptive_avg_pool2d(x, 1)
+        max_pool = F.adaptive_max_pool2d(x, 1)
+        attn = self.mlp(avg_pool) + self.mlp(max_pool)
+        attn = torch.sigmoid(attn)
+        return x * attn
+
+
+class SpatialAttention(nn.Module):
+    def __init__(self, kernel_size: int = 7):
+        super().__init__()
+        padding = kernel_size // 2
+        self.conv = nn.Conv2d(2, 1, kernel_size=kernel_size, padding=padding, bias=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = torch.mean(x, dim=1, keepdim=True)
+        max_pool, _ = torch.max(x, dim=1, keepdim=True)
+        feat = torch.cat([avg_pool, max_pool], dim=1)
+        attn = torch.sigmoid(self.conv(feat))
+        return x * attn
+
+
+class BidirectionalChannelSpatialAttention(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        self.ca = ChannelAttention(in_channels, reduction)
+        self.sa = SpatialAttention()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.sa(self.ca(x)) + self.ca(self.sa(x))
+
+
+def main():
+    torch.manual_seed(42)
+    x = torch.randn(2, 64, 32, 32)
+    model = BidirectionalChannelSpatialAttention(64, 16)
+    model.eval()
+    with torch.no_grad():
+        out = model(x)
+    print(f"in: {x.shape}  ->  out: {out.shape}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+#### Bidirectional Channel-Spatial Adaptive-Fusion Attention (Bi-CSAFA)
+
+
