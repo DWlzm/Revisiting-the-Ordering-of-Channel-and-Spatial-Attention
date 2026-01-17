@@ -2,6 +2,11 @@
 
 This paper can be accessed for free at https://arxiv.org/pdf/2601.07310.
 
+The remaining code will be open-sourced in phases.
+- Preliminaries ☑
+- Sequential Mode ☑
+- Parallel Mode ☑
+- 
 ## Abstract
 
 Attention mechanisms have become a core component of deep learning models, with Channel Attention and Spatial Attention being the two most representative architectures. Current research on their fusion strategies primarily bifurcates into sequential and parallel paradigms, yet the selection process remains largely empirical, lacking systematic analysis and unified principles. We systematically compare channel-spatial attention combinations under a unified framework, building an evaluation suite of 18 topologies across four classes: sequential, parallel, multi-scale, and residual. Across two vision and nine medical datasets, we uncover a "data scale-method-performance" coupling law: (1) in few-shot tasks, the "Channel-Multi-scale Spatial" cascaded structure achieves optimal performance; (2) in medium-scale tasks, parallel learnable fusion architectures demonstrate superior results; (3) in large-scale tasks, parallel structures with dynamic gating yield the best performance. Additionally, experiments indicate that the "Spatial-Channel" order is more stable and effective for fine-grained classification, while residual connections mitigate vanishing gradient problems across varying data scales. We thus propose scenario-based guidelines for building future attention modules. 
@@ -402,6 +407,9 @@ if __name__ == "__main__":
 
 ### Parallel
 
+![second-1](https://github.com/user-attachments/assets/10a206bc-174b-4ed9-8f2b-feb610e17003)
+
+
 #### Channel \& Spatial Additive Attention (C\&S$A^2$)
 
 ```python
@@ -465,3 +473,4 @@ def main():
 if __name__ == "__main__":
     main()
 ```
+
