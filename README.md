@@ -624,25 +624,443 @@ if __name__ == "__main__":
 
 # 4. Residual Connection Pattern
 
+![third-1](https://github.com/user-attachments/assets/eed6cd79-8163-4b2e-9ca8-8715bdcbb38a)
 
 
 
 ## 4.1 Residual Channel-Spatial Attention (RCSA)
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+class ChannelAttention(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        hidden = max(8, in_channels // reduction)
+        self.mlp = nn.Sequential(
+            nn.Conv2d(in_channels, hidden, 1, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(hidden, in_channels, 1, bias=False),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = F.adaptive_avg_pool2d(x, 1)
+        max_pool = F.adaptive_max_pool2d(x, 1)
+        attn = self.mlp(avg_pool) + self.mlp(max_pool)
+        attn = torch.sigmoid(attn)
+        return x * attn
+
+
+class SpatialAttention(nn.Module):
+    def __init__(self, kernel_size: int = 7):
+        super().__init__()
+        padding = kernel_size // 2
+        self.conv = nn.Conv2d(2, 1, kernel_size=kernel_size, padding=padding, bias=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = torch.mean(x, dim=1, keepdim=True)
+        max_pool, _ = torch.max(x, dim=1, keepdim=True)
+        feat = torch.cat([avg_pool, max_pool], dim=1)
+        attn = torch.sigmoid(self.conv(feat))
+        return x * attn
+
+
+class ResidualChannelSpatialAttention(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        self.ca = ChannelAttention(in_channels, reduction)
+        self.sa = SpatialAttention()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return x + self.sa(self.ca(x))
+
+
+def main():
+    torch.manual_seed(42)
+    x = torch.randn(2, 64, 32, 32)
+    model = ResidualChannelSpatialAttention(64, 16)
+    model.eval()
+    with torch.no_grad():
+        out = model(x)
+    print(f"in: {x.shape}  ->  out: {out.shape}")
+
+
+if __name__ == '__main__':
+    main()
+```
+
 
 ## 4.2 Adaptive Residual Channel-Spatial Attention (ARCSA)
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+class ChannelAttention(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        hidden = max(8, in_channels // reduction)
+        self.mlp = nn.Sequential(
+            nn.Conv2d(in_channels, hidden, 1, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(hidden, in_channels, 1, bias=False),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = F.adaptive_avg_pool2d(x, 1)
+        max_pool = F.adaptive_max_pool2d(x, 1)
+        attn = self.mlp(avg_pool) + self.mlp(max_pool)
+        attn = torch.sigmoid(attn)
+        return x * attn
+
+
+class SpatialAttention(nn.Module):
+    def __init__(self, kernel_size: int = 7):
+        super().__init__()
+        padding = kernel_size // 2
+        self.conv = nn.Conv2d(2, 1, kernel_size=kernel_size, padding=padding, bias=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = torch.mean(x, dim=1, keepdim=True)
+        max_pool, _ = torch.max(x, dim=1, keepdim=True)
+        feat = torch.cat([avg_pool, max_pool], dim=1)
+        attn = torch.sigmoid(self.conv(feat))
+        return x * attn
+
+
+class AdaptiveResidualChannelSpatialAttention (nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        self.ca   = ChannelAttention(in_channels, reduction)
+        self.sa   = SpatialAttention()
+        self.beta = nn.Parameter(torch.tensor(0.5))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        attn = self.sa(self.ca(x))
+        beta = torch.sigmoid(self.beta)
+        return (1 - beta) * x + beta * attn
+
+
+def main():
+    torch.manual_seed(42)
+    x = torch.randn(2, 64, 32, 32)
+    model = AdaptiveResidualChannelSpatialAttention (64, 16)
+    model.eval()
+    with torch.no_grad():
+        out = model(x)
+    print(f"in: {x.shape}  ->  out: {out.shape}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
 
 ## 4.3 Gated Residual Channel–Spatial Attention(GRCSA)
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
 
+
+class ChannelAttention(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        hidden = max(8, in_channels // reduction)
+        self.mlp = nn.Sequential(
+            nn.Conv2d(in_channels, hidden, 1, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(hidden, in_channels, 1, bias=False),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = F.adaptive_avg_pool2d(x, 1)
+        max_pool = F.adaptive_max_pool2d(x, 1)
+        attn = self.mlp(avg_pool) + self.mlp(max_pool)
+        attn = torch.sigmoid(attn)
+        return x * attn
+
+
+class SpatialAttention(nn.Module):
+    def __init__(self, kernel_size: int = 7):
+        super().__init__()
+        padding = kernel_size // 2
+        self.conv = nn.Conv2d(2, 1, kernel_size=kernel_size, padding=padding, bias=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = torch.mean(x, dim=1, keepdim=True)
+        max_pool, _ = torch.max(x, dim=1, keepdim=True)
+        feat = torch.cat([avg_pool, max_pool], dim=1)
+        attn = torch.sigmoid(self.conv(feat))
+        return x * attn
+
+
+class  GatedResidualChannelSpatialAttention(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        self.ca   = ChannelAttention(in_channels, reduction)
+        self.sa   = SpatialAttention()
+        hidden    = max(8, in_channels // reduction)
+        self.gate = nn.Sequential(
+            nn.AdaptiveAvgPool2d(1),
+            nn.Conv2d(in_channels, hidden, 1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(hidden, 1, 1),
+            nn.Sigmoid(),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        attn = self.sa(self.ca(x))
+        g = self.gate(x)          # [B,1,1,1]
+        return (1 - g) * x + g * attn
+
+
+def main():
+    torch.manual_seed(42)
+    x = torch.randn(4, 64, 32, 32)
+    model = GatedResidualChannelSpatialAttention(64, 16)
+    model.eval()
+    with torch.no_grad():
+        out = model(x)
+    print(f"in: {x.shape}  ->  out: {out.shape}")
+
+
+if __name__ == "__main__":
+    main()
+```
 
 # 5. Multi-scale Information Pattern
+![fourth-1](https://github.com/user-attachments/assets/ef27a367-1cf8-4ca9-9a44-17c5260f7fc3)
 
 ## 5.1 Channel–Multi-Scale Spatial Attention (C-MSSA)
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
 
+
+class ChannelAttention(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        hidden = max(8, in_channels // reduction)
+        self.mlp = nn.Sequential(
+            nn.Conv2d(in_channels, hidden, 1, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(hidden, in_channels, 1, bias=False),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = F.adaptive_avg_pool2d(x, 1)
+        max_pool = F.adaptive_max_pool2d(x, 1)
+        attn = self.mlp(avg_pool) + self.mlp(max_pool)
+        attn = torch.sigmoid(attn)
+        return x * attn
+
+
+class SpatialAttention(nn.Module):
+    def __init__(self, kernel_size: int = 7):
+        super().__init__()
+        padding = kernel_size // 2
+        self.conv = nn.Conv2d(2, 1, kernel_size=kernel_size, padding=padding, bias=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = torch.mean(x, dim=1, keepdim=True)
+        max_pool, _ = torch.max(x, dim=1, keepdim=True)
+        feat = torch.cat([avg_pool, max_pool], dim=1)
+        attn = torch.sigmoid(self.conv(feat))
+        return x * attn
+
+
+class ChannelMultiScaleSpatialAttention(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        self.ca = ChannelAttention(in_channels, reduction)
+        self.sa_3 = SpatialAttention(3)
+        self.sa_5 = SpatialAttention(5)
+        self.sa_7 = SpatialAttention(7)
+
+        hidden = max(8, in_channels // reduction)
+        self.gate = nn.Sequential(
+            nn.AdaptiveAvgPool2d(1),
+            nn.Conv2d(in_channels, hidden, 1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(hidden, 3, 1),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        ca = self.ca(x)
+        w = torch.softmax(self.gate(ca), dim=1)          # [B,3,1,1]
+        return (w[:, 0:1] * self.sa_3(ca) +
+                w[:, 1:2] * self.sa_5(ca) +
+                w[:, 2:3] * self.sa_7(ca))
+
+
+def main():
+    torch.manual_seed(42)
+    x = torch.randn(4, 64, 32, 32)
+    model = ChannelMultiScaleSpatialAttention(64, 16)
+    model.eval()
+    with torch.no_grad():
+        out = model(x)
+    print(f"in: {x.shape}  ->  out: {out.shape}")
+
+
+if __name__ == "__main__":
+    main()
+```
 
 ## 5.2 Multi-Squeeze Channel–Spatial Attention (MSC-SA)
 
-## 5.3 Channel-Cascaded Multi-Scale Spatial Attention (C-CMSSA)
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
 
+
+class ChannelAttention(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        hidden = max(8, in_channels // reduction)
+        self.mlp = nn.Sequential(
+            nn.Conv2d(in_channels, hidden, 1, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(hidden, in_channels, 1, bias=False),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = F.adaptive_avg_pool2d(x, 1)
+        max_pool = F.adaptive_max_pool2d(x, 1)
+        attn = self.mlp(avg_pool) + self.mlp(max_pool)
+        attn = torch.sigmoid(attn)
+        return x * attn
+
+
+class SpatialAttention(nn.Module):
+    def __init__(self, kernel_size: int = 7):
+        super().__init__()
+        padding = kernel_size // 2
+        self.conv = nn.Conv2d(2, 1, kernel_size=kernel_size, padding=padding, bias=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = torch.mean(x, dim=1, keepdim=True)
+        max_pool, _ = torch.max(x, dim=1, keepdim=True)
+        feat = torch.cat([avg_pool, max_pool], dim=1)
+        attn = torch.sigmoid(self.conv(feat))
+        return x * attn
+
+
+class  MultiSqueezeChannelSpatialAttention (nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        self.ca_4  = ChannelAttention(in_channels, reduction=4)
+        self.ca_8  = ChannelAttention(in_channels, reduction=8)
+        self.ca_16 = ChannelAttention(in_channels, reduction=16)
+        self.ca_32 = ChannelAttention(in_channels, reduction=32)
+
+        hidden = max(8, in_channels // reduction)
+        self.gate = nn.Sequential(
+            nn.AdaptiveAvgPool2d(1),
+            nn.Conv2d(in_channels, hidden, 1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(hidden, 4, 1),
+        )
+        self.sa = SpatialAttention()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        ca4  = self.ca_4(x)
+        ca8  = self.ca_8(x)
+        ca16 = self.ca_16(x)
+        ca32 = self.ca_32(x)
+
+        w = torch.softmax(self.gate(x), dim=1)          # [B,4,1,1]
+        ca_merged = (w[:, 0:1] * ca4 +
+                     w[:, 1:2] * ca8 +
+                     w[:, 2:3] * ca16 +
+                     w[:, 3:4] * ca32)
+        return self.sa(ca_merged)
+
+
+def main():
+    torch.manual_seed(42)
+    x = torch.randn(2, 64, 32, 32)
+    model = MultiSqueezeChannelSpatialAttention(64, 16)
+    model.eval()
+    with torch.no_grad():
+        out = model(x)
+    print(f"in: {x.shape}  ->  out: {out.shape}")
+
+
+if __name__ == '__main__':
+    main()
+```
+
+## 5.3 Channel-Cascaded Multi-Scale Spatial Attention (C-CMSSA)
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+class ChannelAttention(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        hidden = max(8, in_channels // reduction)
+        self.mlp = nn.Sequential(
+            nn.Conv2d(in_channels, hidden, 1, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(hidden, in_channels, 1, bias=False),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = F.adaptive_avg_pool2d(x, 1)
+        max_pool = F.adaptive_max_pool2d(x, 1)
+        attn = self.mlp(avg_pool) + self.mlp(max_pool)
+        attn = torch.sigmoid(attn)
+        return x * attn
+
+
+class SpatialAttention(nn.Module):
+    def __init__(self, kernel_size: int = 7):
+        super().__init__()
+        padding = kernel_size // 2
+        self.conv = nn.Conv2d(2, 1, kernel_size=kernel_size, padding=padding, bias=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = torch.mean(x, dim=1, keepdim=True)
+        max_pool, _ = torch.max(x, dim=1, keepdim=True)
+        feat = torch.cat([avg_pool, max_pool], dim=1)
+        attn = torch.sigmoid(self.conv(feat))
+        return x * attn
+
+
+class ChannelCascadedMultiScaleSpatialAttention(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super().__init__()
+        self.ca        = ChannelAttention(in_channels, reduction)
+        self.sa_coarse = SpatialAttention(7)
+        self.sa_medium = SpatialAttention(5)
+        self.sa_fine   = SpatialAttention(3)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.sa_fine(self.sa_medium(self.sa_coarse(self.ca(x))))
+
+
+def main():
+    torch.manual_seed(42)
+    x = torch.randn(4, 64, 32, 32)
+    model = ChannelCascadedMultiScaleSpatialAttention(64, 16)
+    model.eval()
+    with torch.no_grad():
+        out = model(x)
+    print(f"in: {x.shape}  ->  out: {out.shape}")
+
+
+if __name__ == "__main__":
+    main()
+```
 # Experiments
 
 
