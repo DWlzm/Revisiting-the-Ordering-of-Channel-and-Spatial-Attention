@@ -609,15 +609,15 @@ if __name__ == "__main__":
     main()
 ```
 
-## Bidirectional Channel-Spatial Adaptive-Fusion Attention (Bi-CSAFA)
+## 3.4 Bidirectional Channel-Spatial Adaptive-Fusion Attention (Bi-CSAFA)
 
 
 
-## 3.4 Gated Channel \& Spatial Additive Attention (GC\&SA^2)
+## 3.5 Gated Channel \& Spatial Additive Attention (GC\&SA^2)
 
 
 
-## 3.5 Triple-Gate Parallel Fusion Attention (TGPFA)
+## 3.6 Triple-Gate Parallel Fusion Attention (TGPFA)
 
 
 
