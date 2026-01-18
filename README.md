@@ -477,7 +477,7 @@ if __name__ == "__main__":
 ```
 
 
-## Channel $\&$ Spatial Adaptive-Fusion Attention (C$\&$SAFA)
+## Channel and Spatial Adaptive-Fusion Attention (C\&SAFA)
 
 ```python
 import torch
