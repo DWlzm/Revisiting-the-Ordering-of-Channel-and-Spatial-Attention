@@ -32,7 +32,7 @@ Attention mechanisms have become a core component of deep learning models, with 
 
 ## Code
 This section first introduces the core structures, mathematical expressions, and functional positioning of three types of basic attention components (Channel Attention, Spatial Attention, and Gate Attention)
-## Preliminaries
+# Preliminaries
 
 ![BasicComponents-1](https://github.com/user-attachments/assets/9824548c-a282-4124-b3ba-698661972cc6)
 
@@ -150,7 +150,7 @@ if __name__ == "__main__":
     main()
 ```
 
-## Sequential Mode
+# Sequential Mode
 
 ![first-1](https://github.com/user-attachments/assets/30d25e08-00d8-44d6-99ba-6816122b2b82)
 
@@ -407,7 +407,7 @@ if __name__ == "__main__":
     main()
 ```
 
-## Parallel
+# Parallel
 
 ![second-1](https://github.com/user-attachments/assets/10a206bc-174b-4ed9-8f2b-feb610e17003)
 
@@ -622,7 +622,7 @@ if __name__ == "__main__":
 
 
 
-## Residual Connection Pattern
+# Residual Connection Pattern
 
 
 
@@ -632,6 +632,23 @@ if __name__ == "__main__":
 ## Adaptive Residual Channel-Spatial Attention (ARCSA)
 
 ## Gated Residual Channel–Spatial Attention(GRCSA)
+
+
+# Multi-scale Information Pattern
+
+## Channel–Multi-Scale Spatial Attention (C-MSSA)
+
+
+## Multi-Squeeze Channel–Spatial Attention (MSC-SA)
+
+## Channel-Cascaded Multi-Scale Spatial Attention (C-CMSSA)
+
+# Experiments
+
+
+
+
+
 
 
 
