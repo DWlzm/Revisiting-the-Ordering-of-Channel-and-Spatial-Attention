@@ -1285,15 +1285,20 @@ if __name__ == "__main__":
 
 
 
+![cifar10_cifar100_dual_axes-1](https://github.com/user-attachments/assets/266994f9-d879-435b-b959-bf4649c73c51)
 
 
 
+<img width="1775" height="737" alt="image" src="https://github.com/user-attachments/assets/9aef85d1-ba5d-48ac-9403-60ece8a3921e" />
 
 
+<img width="1460" height="683" alt="image" src="https://github.com/user-attachments/assets/afa0c9b9-7abe-4c7d-8adb-ffded4804e19" />
 
 
+<img width="1748" height="630" alt="image" src="https://github.com/user-attachments/assets/6073a510-e2be-4c43-b3d8-d18dcac8eead" />
 
 
+<img width="1708" height="756" alt="image" src="https://github.com/user-attachments/assets/a043bd29-1df0-438f-b944-f5d9bda51df5" />
 
 
 
