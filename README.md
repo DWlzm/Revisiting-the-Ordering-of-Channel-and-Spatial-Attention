@@ -6,8 +6,8 @@ The remaining code will be open-sourced in phases.
 - Preliminaries ☑
 - Sequential Mode ☑
 - Parallel Mode ☑
-- Residual Connection Pattern
-- Multi-scale Information Pattern
+- Residual Connection Pattern ☑
+- Multi-scale Information Pattern ☑
   
 ## Abstract
 
