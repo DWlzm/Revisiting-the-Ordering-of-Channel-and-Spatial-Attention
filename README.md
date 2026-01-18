@@ -32,11 +32,11 @@ Attention mechanisms have become a core component of deep learning models, with 
 
 ## Code
 This section first introduces the core structures, mathematical expressions, and functional positioning of three types of basic attention components (Channel Attention, Spatial Attention, and Gate Attention)
-# Preliminaries
+# 1. Preliminaries
 
 ![BasicComponents-1](https://github.com/user-attachments/assets/9824548c-a282-4124-b3ba-698661972cc6)
 
-## Channel Attention(CA)
+## 1.1 Channel Attention(CA)
 
 ```python
 import torch
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     main()
 ```
 
-## Spatial Attention(SA)
+## 1.2 Spatial Attention(SA)
 
 ```python
 import torch
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     main()
 ```
 
-## Gate Attention(GA)
+## 1.3 Gate Attention(GA)
 ```python
 import torch
 import torch.nn as nn
@@ -150,12 +150,12 @@ if __name__ == "__main__":
     main()
 ```
 
-# Sequential Mode
+# 2. Sequential Mode
 
 ![first-1](https://github.com/user-attachments/assets/30d25e08-00d8-44d6-99ba-6816122b2b82)
 
 
-##  Channel and Spatial Attention ( CSA || CBAM )
+##  2.1 Channel and Spatial Attention ( CSA || CBAM )
 
 ```python
 import torch
@@ -217,7 +217,7 @@ if __name__ == "__main__":
     main()
 ```
 
-## Spatial and Channel Attention 
+## 2.2 Spatial and Channel Attention 
 
 ```python
 import torch
@@ -279,7 +279,7 @@ if __name__ == "__main__":
     main()
 ```
 
-## CSCA
+## 2.3 CSCA
 ```python
 import torch
 import torch.nn as nn
@@ -342,7 +342,7 @@ def main():
 if __name__ == "__main__":
     main()
 ```
-## SCSA
+## 2.4 SCSA
 
 ```python
 import torch
@@ -407,12 +407,12 @@ if __name__ == "__main__":
     main()
 ```
 
-# Parallel
+# 3. Parallel
 
 ![second-1](https://github.com/user-attachments/assets/10a206bc-174b-4ed9-8f2b-feb610e17003)
 
 
-## Channel \& Spatial Additive Attention (C\&S$A^2$)
+## 3.1 Channel \& Spatial Additive Attention (C\&S$A^2$)
 
 ```python
 import torch
@@ -477,7 +477,7 @@ if __name__ == "__main__":
 ```
 
 
-## Channel and Spatial Adaptive-Fusion Attention (C\&SAFA)
+## 3.2 Channel and Spatial Adaptive-Fusion Attention (C\&SAFA)
 
 ```python
 import torch
@@ -545,7 +545,7 @@ if __name__ == '__main__':
 
 
 
-## Bidirectional Channel-Spatial Attention(Bi-CSA)
+## 3.3 Bidirectional Channel-Spatial Attention(Bi-CSA)
 
 ```python
 import torch
@@ -613,35 +613,35 @@ if __name__ == "__main__":
 
 
 
-## Gated Channel \& Spatial Additive Attention (GC\&SA^2)
+## 3.4 Gated Channel \& Spatial Additive Attention (GC\&SA^2)
 
 
 
-## Triple-Gate Parallel Fusion Attention (TGPFA)
-
-
-
-
-# Residual Connection Pattern
+## 3.5 Triple-Gate Parallel Fusion Attention (TGPFA)
 
 
 
 
-## Residual Channel-Spatial Attention (RCSA)
-
-## Adaptive Residual Channel-Spatial Attention (ARCSA)
-
-## Gated Residual Channel–Spatial Attention(GRCSA)
+# 4. Residual Connection Pattern
 
 
-# Multi-scale Information Pattern
-
-## Channel–Multi-Scale Spatial Attention (C-MSSA)
 
 
-## Multi-Squeeze Channel–Spatial Attention (MSC-SA)
+## 4.1 Residual Channel-Spatial Attention (RCSA)
 
-## Channel-Cascaded Multi-Scale Spatial Attention (C-CMSSA)
+## 4.2 Adaptive Residual Channel-Spatial Attention (ARCSA)
+
+## 4.3 Gated Residual Channel–Spatial Attention(GRCSA)
+
+
+# 5. Multi-scale Information Pattern
+
+## 5.1 Channel–Multi-Scale Spatial Attention (C-MSSA)
+
+
+## 5.2 Multi-Squeeze Channel–Spatial Attention (MSC-SA)
+
+## 5.3 Channel-Cascaded Multi-Scale Spatial Attention (C-CMSSA)
 
 # Experiments
 
