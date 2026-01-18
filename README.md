@@ -32,11 +32,11 @@ Attention mechanisms have become a core component of deep learning models, with 
 
 ## Code
 This section first introduces the core structures, mathematical expressions, and functional positioning of three types of basic attention components (Channel Attention, Spatial Attention, and Gate Attention)
-### Preliminaries
+## Preliminaries
 
 ![BasicComponents-1](https://github.com/user-attachments/assets/9824548c-a282-4124-b3ba-698661972cc6)
 
-#### Channel Attention(CA)
+## Channel Attention(CA)
 
 ```python
 import torch
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     main()
 ```
 
-#### Spatial Attention(SA)
+## Spatial Attention(SA)
 
 ```python
 import torch
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     main()
 ```
 
-#### Gate Attention(GA)
+## Gate Attention(GA)
 ```python
 import torch
 import torch.nn as nn
@@ -150,12 +150,12 @@ if __name__ == "__main__":
     main()
 ```
 
-### Sequential Mode
+## Sequential Mode
 
 ![first-1](https://github.com/user-attachments/assets/30d25e08-00d8-44d6-99ba-6816122b2b82)
 
 
-####  Channel and Spatial Attention ( CSA || CBAM )
+##  Channel and Spatial Attention ( CSA || CBAM )
 
 ```python
 import torch
@@ -217,7 +217,7 @@ if __name__ == "__main__":
     main()
 ```
 
-#### Spatial and Channel Attention 
+## Spatial and Channel Attention 
 
 ```python
 import torch
@@ -279,7 +279,7 @@ if __name__ == "__main__":
     main()
 ```
 
-#### CSCA
+## CSCA
 ```python
 import torch
 import torch.nn as nn
@@ -342,7 +342,7 @@ def main():
 if __name__ == "__main__":
     main()
 ```
-#### SCSA
+## SCSA
 
 ```python
 import torch
@@ -407,12 +407,12 @@ if __name__ == "__main__":
     main()
 ```
 
-### Parallel
+## Parallel
 
 ![second-1](https://github.com/user-attachments/assets/10a206bc-174b-4ed9-8f2b-feb610e17003)
 
 
-#### Channel \& Spatial Additive Attention (C\&S$A^2$)
+## Channel \& Spatial Additive Attention (C\&S$A^2$)
 
 ```python
 import torch
@@ -477,7 +477,7 @@ if __name__ == "__main__":
 ```
 
 
-#### Channel $\&$ Spatial Adaptive-Fusion Attention (C$\&$SAFA)
+## Channel $\&$ Spatial Adaptive-Fusion Attention (C$\&$SAFA)
 
 ```python
 import torch
@@ -545,7 +545,7 @@ if __name__ == '__main__':
 
 
 
-#### Bidirectional Channel-Spatial Attention(Bi-CSA)
+## Bidirectional Channel-Spatial Attention(Bi-CSA)
 
 ```python
 import torch
@@ -609,6 +609,6 @@ if __name__ == "__main__":
     main()
 ```
 
-#### Bidirectional Channel-Spatial Adaptive-Fusion Attention (Bi-CSAFA)
+## Bidirectional Channel-Spatial Adaptive-Fusion Attention (Bi-CSAFA)
 
 
