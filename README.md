@@ -612,3 +612,45 @@ if __name__ == "__main__":
 ## Bidirectional Channel-Spatial Adaptive-Fusion Attention (Bi-CSAFA)
 
 
+
+## Gated Channel \& Spatial Additive Attention (GC\&SA^2)
+
+
+
+## Triple-Gate Parallel Fusion Attention (TGPFA)
+
+
+
+
+## Residual Connection Pattern
+
+
+
+
+## Residual Channel-Spatial Attention (RCSA)
+
+## Adaptive Residual Channel-Spatial Attention (ARCSA)
+
+## Gated Residual Channel–Spatial Attention(GRCSA)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
